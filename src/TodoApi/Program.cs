@@ -1,26 +1,25 @@
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddDbContext<TodoContext>(opt =>
-    opt.UseInMemoryDatabase("TodoList"));
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add authentication and cookie-based authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // Redirect to login if not authenticated
+        options.AccessDeniedPath = "/Account/AccessDenied"; // Access denied page
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
+// Add authentication middleware to the pipeline
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
